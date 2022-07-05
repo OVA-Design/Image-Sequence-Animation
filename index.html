@@ -1,0 +1,125 @@
+<style>
+  body {
+    background: #ffffff;
+  }
+
+  .animation-wrapper {
+    margin: auto;
+    width: 100%;
+    max-width: 2560px;
+    display: block;
+    justify-content: center;
+  }
+
+  .canvas {
+    /*position: relative;*/
+    width: 100%;
+    /*padding-bottom: 100%;  height/width*100 */
+    height: 100%;
+  }
+
+  #myCanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /*height: 100%;*/
+  }
+</style>
+<div class="animation-wrapper">
+  <div class="canvas">
+    <canvas id="myCanvas" width="2560" height="1440"></canvas>
+    <script>
+      // Config
+
+      var sequencePath = 'https://raw.githubusercontent.com/OVArchitect/OVA_Logo/master/imgs/';
+      var sequenceNumberLength = 3;
+      var fileName = '0';
+      var fileSuffix = '.jpg';
+
+      var targetElement = document.getElementById('myCanvas');
+
+      //var fps = 30;
+      var startFrame = 0;
+      var endFrame = 299;
+      var loop = true;
+      var pingPong = false;
+
+      // Functions
+
+      function padWithZeroes(number, length) {
+        var paddedNumber = '' + number;
+        while (paddedNumber.length < length) {
+          paddedNumber = '0' + paddedNumber;
+        }
+        return paddedNumber;
+      }
+
+      var frames = [];
+      var framesLoaded = 0;
+
+      function loadFrames(callback) {
+        for (var i = startFrame; i <= endFrame; i++) {
+          frames[i] = new Image();
+          frames[i].src =
+            sequencePath + fileName + padWithZeroes(i, sequenceNumberLength) + fileSuffix;
+          frames[i].onload = function() {
+            framesLoaded++;
+            if (framesLoaded >= endFrame - startFrame) {
+              callback();
+            }
+          };
+
+        }
+      }
+
+
+      var currentFrame = startFrame;
+      //var interval = 1000/fps;
+      var forwards = true;
+
+      function frameAnimation() {
+        console.log(currentFrame);
+        var canvas = targetElement;
+        var context = canvas.getContext('2d');
+        //var img = new Image;
+
+        //img.onload = function() {
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.drawImage(frames[currentFrame], 0, 0);
+        //};
+
+        // If last frame
+        if (currentFrame == endFrame) {
+          if (!loop) cancelAnimationFrame();
+
+          if (pingPong) {
+            forwards = false; // Go backwards
+          } else {
+            currentFrame = startFrame; // Start over
+          }
+          // If first frame
+        } else if (currentFrame == startFrame) {
+          if (pingPong) {
+            forwards = true;
+          }
+        }
+
+        //img.src = sequencePath + fileName + padWithZeroes(currentFrame, sequenceNumberLength) + fileSuffix;
+
+        if (forwards) {
+          currentFrame++;
+        } else {
+          currentFrame--;
+        }
+
+        requestAnimationFrame(frameAnimation);
+      }
+
+      loadFrames(function() {
+        console.log('loaded!');
+        frameAnimation();
+      });
+    </script>
+  </div>
+</div>
